@@ -1,2 +1,2 @@
 # ProjetoConcVideos
-Projeto de concatenação de vídeos via streaming
+Projeto de seleção e reprodução de vídeos em página web
