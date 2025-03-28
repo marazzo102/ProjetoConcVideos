@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Playlist</title>
+</head>
+<body>
+    <h1>Video Playlist</h1>
+    <form id="videoSelectionForm">
+        <label for="videoList">Choose videos to play in sequence:</label>
+        <select id="videoList" name="videoList" multiple size="10">
+            <!-- Options will be populated dynamically -->
+        </select>
+        <button type="submit">Play Videos</button>
+    </form>
+    <video id="videoPlayer" controls></video>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoList = document.getElementById('videoList');
+            const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
+
+            videos.forEach(video => {
+                const option = document.createElement('option');
+                option.value = video;
+                option.textContent = video;
+                videoList.appendChild(option);
+            });
+
+            // Load saved video selections and playback position
+            const savedVideos = JSON.parse(localStorage.getItem('selectedVideos')) || [];
+            const savedIndex = localStorage.getItem('currentVideoIndex') || 0;
+            const savedTime = localStorage.getItem('currentTime') || 0;
+
+            savedVideos.forEach(video => {
+                const option = Array.from(videoList.options).find(opt => opt.value === video);
+                if (option) {
+                    option.selected = true;
+                }
+            });
+
+            if (savedVideos.length > 0) {
+                playVideosInSequence(savedVideos, savedIndex, savedTime);
+            }
+        });
+
+        document.getElementById('videoSelectionForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const selectedVideos = Array.from(document.getElementById('videoList').selectedOptions).map(option => option.value);
+            localStorage.setItem('selectedVideos', JSON.stringify(selectedVideos));
+            playVideosInSequence(selectedVideos);
+        });
+
+        function playVideosInSequence(videos, startIndex = 0, startTime = 0) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            let currentVideoIndex = startIndex;
+
+            function playNextVideo() {
+                if (currentVideoIndex < videos.length) {
+                    videoPlayer.src = `videos/${videos[currentVideoIndex]}`;
+                    videoPlayer.currentTime = currentVideoIndex === startIndex ? startTime : 0;
+                    videoPlayer.play();
+                    currentVideoIndex++;
+                }
+            }
+
+            videoPlayer.addEventListener('ended', function() {
+                playNextVideo();
+                localStorage.setItem('currentVideoIndex', currentVideoIndex);
+                localStorage.setItem('currentTime', 0);
+            });
+
+            videoPlayer.addEventListener('timeupdate', function() {
+                localStorage.setItem('currentTime', videoPlayer.currentTime);
+            });
+
+            playNextVideo();
+        }
+    </script>
+</body>
+</html>
